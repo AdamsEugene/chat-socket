@@ -10,7 +10,14 @@ const io = require("socket.io")(server, {
   },
 });
 
-const { addUser, getUsers, getUserById, getUser } = require("./functions");
+const {
+  addUser,
+  getUsers,
+  getUserById,
+  getUser,
+  addSeens,
+  getSeens,
+} = require("./functions");
 
 io.on("connection", (socket) => {
   console.log("new connection");
@@ -21,19 +28,24 @@ io.on("connection", (socket) => {
     users = getUsers({ userId });
     socket.emit("newMember", users);
     socket.to("default").emit("newMember", [userId]);
-
-    console.log(users);
   });
 
   socket.on("sendMessage", (data) => {
     const user = getUser({ id: data.receiver });
     if (user) socket.to(user.socketId).emit("newMessage", data);
-    console.log(user);
+  });
+
+  socket.on("seen message", (data) => {
+    addSeens({ id: data.id, time: data.time });
+    const user = getUser({ id: data.id });
+    socket.to(user.socketId).emit("set seen", getSeens(data.id));
+    console.log(getSeens(data.id));
   });
 
   socket.on("disconnecting", (_reason) => {
     users = getUserById({ socketId: socket.id });
     socket.to("default").emit("someone left", users);
+    console.log(users);
   });
 });
 
