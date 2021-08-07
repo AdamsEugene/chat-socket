@@ -17,6 +17,10 @@ const {
   getUser,
   addSeens,
   getSeens,
+  addTyping,
+  getTyping,
+  removeTyping,
+  removeSeen,
 } = require("./functions");
 
 io.on("connection", (socket) => {
@@ -28,6 +32,7 @@ io.on("connection", (socket) => {
     users = getUsers({ userId });
     socket.emit("newMember", users);
     socket.to("default").emit("newMember", [userId]);
+    console.log(socket.rooms);
   });
 
   socket.on("sendMessage", (data) => {
@@ -38,8 +43,41 @@ io.on("connection", (socket) => {
   socket.on("seen message", (data) => {
     addSeens({ id: data.id, time: data.time });
     const user = getUser({ id: data.id });
-    socket.to(user.socketId).emit("set seen", getSeens(data.id));
-    console.log(getSeens(data.id));
+    user && socket.to(user.socketId).emit("set seen", getSeens(data.id));
+  });
+
+  socket.on("i have seen", (data) => removeSeen(data));
+
+  socket.on("is typing", (id) => {
+    addTyping(id);
+    socket.to("default").emit("some one typing", getTyping());
+  });
+
+  socket.on("not typing", (id) => {
+    const ids = removeTyping(id);
+    socket.to("default").emit("some one typing", ids);
+  });
+
+  // GORUPS
+
+  socket.on("join group", (name) => socket.join(name));
+
+  socket.on("is typing group", ({ groupName, userName }) => {
+    socket
+      .to(groupName)
+      .emit("group member is typing", { groupName, userName });
+    // Send to rome; user is typing
+  });
+
+  socket.on("not typing group", (groupName) =>
+    socket.to(groupName).emit("group member is typing", null)
+  );
+
+  socket.on("send GroupM essage", (data) => {
+    const { receiver, ...others } = data;
+    const message = { groupName: data.receiver, ...others, seen: true };
+    // Send message to room
+    socket.to(message.groupName).emit("group message incomming", message);
   });
 
   socket.on("disconnecting", (_reason) => {

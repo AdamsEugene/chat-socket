@@ -1,5 +1,6 @@
 let users = [];
 let seen = [];
+let typing = [];
 
 const addUser = ({ userId, socketId }) => {
   !users.some((user) => user.userId === userId) &&
@@ -15,11 +16,28 @@ const getUserById = ({ socketId }) => {
 };
 const getUser = ({ id }) => users.find((u) => u.userId === id);
 
-const addSeens = ({ id, time }) =>{
+const addSeens = ({ id, time }) => {
   !seen.some((s) => s.id === id && s.time === time) && seen.push({ id, time });
-  console.log(seen)
-}
+  console.log(seen);
+};
+
+const removeSeen = (data) => {
+  seen = seen.filter(
+    (s) => (s.id !== data.idm || s.id !== data.idu) && s.time !== data.time
+  );
+  return seen;
+};
+
 const getSeens = (id) => seen.map((d) => d.time);
+
+const addTyping = (id) => !typing.some((t) => t === id) && typing.push(id);
+
+const getTyping = () => typing;
+
+const removeTyping = (id) => {
+  typing = typing.filter((t) => t !== id);
+  return typing;
+};
 
 module.exports = {
   addUser,
@@ -28,4 +46,8 @@ module.exports = {
   getUser,
   addSeens,
   getSeens,
+  addTyping,
+  getTyping,
+  removeTyping,
+  removeSeen,
 };
