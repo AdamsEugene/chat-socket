@@ -10,6 +10,8 @@ const io = require("socket.io")(server, {
   },
 });
 
+app.get("/", (req, res) => res.send("chat server is running"));
+
 const {
   addUser,
   getUsers,
