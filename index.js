@@ -3,7 +3,7 @@ const server = require("http").createServer(app);
 // server-side
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "https://i-chat-me.herokuapp.com/",
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true,
